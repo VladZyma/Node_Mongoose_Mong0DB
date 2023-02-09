@@ -1,10 +1,14 @@
-const {userService} = require('../service');
+const {userService, oauthService} = require('../service');
 const {ApiError} = require("../error");
 
 module.exports = {
     register: async (req, res) => {
         try {
-            const userInfo = req.userInfo;
+            let userInfo = req.userInfo;
+
+            const hashedPassword = await oauthService.hashPassword(userInfo.password);
+
+            userInfo = {...userInfo, password: hashedPassword};
 
             const user = await userService.createUser(userInfo);
 

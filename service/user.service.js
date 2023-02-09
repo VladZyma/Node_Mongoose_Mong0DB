@@ -1,4 +1,5 @@
 const {User} = require('../dataBase');
+const {Types} = require('mongoose');
 
 module.exports = {
     createUser: async (userInfo) => {
@@ -6,7 +7,10 @@ module.exports = {
         return user;
     },
     findUserById: async (userId) => {
-        const user = User.findById(userId).lean();
+        const user = await User.aggregate([
+            {$match: {_id: Types.ObjectId(userId)}},
+            {$lookup: {from: 'cars', foreignField: '_user_id', localField: '_id', as: 'cars'}},
+        ]);
         return user;
     },
     findAllUsers: async (filter = {}) => {
