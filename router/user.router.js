@@ -1,10 +1,11 @@
 const router = require('express').Router();
 
-const {userMiddleware} = require('../middleware');
+const {userMiddleware, oauthMiddleware} = require('../middleware');
 const {userController} = require('../controller');
 
 router.get(
     '/',
+    oauthMiddleware.checkToken('accessToken'),
     userController.getAllUsers,
 );
 router.post(
@@ -16,12 +17,14 @@ router.post(
 
 router.get(
     '/:userId',
+    oauthMiddleware.checkToken('accessToken'),
     userMiddleware.isUserIdValid,
     userMiddleware.isUserExistsById,
     userController.getUserById,
 );
 router.put(
     '/:userId',
+    oauthMiddleware.checkToken('accessToken'),
     userMiddleware.isUpdatingUserBodyValid,
     userMiddleware.isUserIdValid,
     userMiddleware.isUserExistsById,
@@ -29,6 +32,7 @@ router.put(
 );
 router.delete(
     '/:userId',
+    oauthMiddleware.checkToken('accessToken'),
     userMiddleware.isUserIdValid,
     userMiddleware.isUserExistsById,
     userController.deleteUserById,

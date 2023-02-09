@@ -1,6 +1,9 @@
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
+const {OAuth} = require('../dataBase');
 const {ApiError} = require('../error');
+const {config} = require('../config');
 
 module.exports = {
     hashPassword: async (password) => {
@@ -13,5 +16,44 @@ module.exports = {
         if (!isPasswordsSame) {
             throw new ApiError('Wrong email or password', 401);
         }
+    },
+
+    generateAccessTokens: (dataTiSign) => {
+        const accessToken = jwt.sign(dataTiSign, config.ACCESS_TOKEN_SECRET, {expiresIn: '30s'});
+        const refreshToken = jwt.sign(dataTiSign, config.REFRESH_TOKEN_SECRET, {expiresIn: '60s'});
+
+        return {
+            accessToken,
+            refreshToken,
+        }
+    },
+    checkAccessToken: (token, tokenType) => {
+        try {
+            let secret = '';
+
+            switch (tokenType) {
+                case 'accessToken':
+                    secret = config.ACCESS_TOKEN_SECRET;
+                    break;
+                case 'refreshToken':
+                    secret = config.REFRESH_TOKEN_SECRET;
+                    break;
+            }
+
+            return jwt.verify(token, secret);
+        } catch (e) {
+            throw new ApiError('Access token has expired', 401);
+        }
+    },
+    addTokensToBase: async (tokenInfo) => {
+        const tokens = await OAuth.create(tokenInfo);
+        return tokens;
+    },
+    findAccessToken: async (tokenInfo) => {
+        const token = await OAuth.findOne(tokenInfo);
+        return token;
+    },
+    deleteAccessTokens: async (tokenId) => {
+        await OAuth.findByIdAndDelete(tokenId);
     },
 };

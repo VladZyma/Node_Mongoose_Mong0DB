@@ -43,7 +43,6 @@ module.exports = {
         try {
             const userInfo = req.newUserInfo;
             const {userId} = req.params;
-            console.log(userInfo);
 
             const updatedUser = await userService.findUpdateById(userId, userInfo);
 
