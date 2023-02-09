@@ -10,7 +10,7 @@ module.exports = {
         return cars;
     },
     findCarById: async (carId) => {
-        const car = await Car.findById(carId).lean();
+        const car = await Car.findById(carId).populate('_user_id').lean();
         return car;
     },
     findUpdateCarById: async (carId, carInfo) => {
