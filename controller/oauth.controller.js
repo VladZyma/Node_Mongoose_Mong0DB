@@ -1,5 +1,6 @@
 const {oauthService, userService} = require('../service');
 const {ApiError} = require('../error');
+const {tokenAction} = require('../config');
 
 module.exports = {
     login: async (req, res, next) => {
@@ -59,6 +60,37 @@ module.exports = {
             res.sendStatus(204);
         } catch (e) {
             console.log(e);
+        }
+    },
+    forgotPassword: async (req, res) => {
+        try {
+            const userInfo = req.userInfo;
+
+            const actionToken = oauthService.generateActionToken(tokenAction.FORGOT_PASSWORD, {email: userInfo.email});
+
+            await oauthService.addActionTokenToBase({_user_id: userInfo._id, tokenType: tokenAction.FORGOT_PASSWORD, actionToken});
+
+            //send email
+
+            res.sendStatus(200);
+        } catch (e) {
+            console.log(e);
+        }
+    },
+    setNewPassword: async (req, res, next) => {
+        try {
+            const {password} = req.userPassword;
+            const actionTokenInfo = req.actionTokenInfo;
+
+            const hashedPassword = await oauthService.hashPassword(password);
+
+            await oauthService.deleteActionTokenById(actionTokenInfo._id);
+
+            const updatedUser = await userService.findUpdateById(actionTokenInfo._user_id, {password: hashedPassword});
+
+            res.status(201).json(updatedUser);
+        } catch (e) {
+            next(e);
         }
     },
 };
