@@ -4,4 +4,5 @@ module.exports = {
     carRegexp: require('./car.regexp'),
     mongoIdRegexp: require('./mongoId.regexp'),
     tokenAction: require('./token.actions.enum'),
+    emailAction: require('./email.actions.enum'),
 };
