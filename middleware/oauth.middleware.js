@@ -100,7 +100,6 @@ module.exports = {
             oauthService.checkActionToken(actionToken, actionType);
 
             const actionTokenInfo = await oauthService.findActionToken({actionToken});
-            console.log('actionTokenInfo', actionTokenInfo);
 
             if (!actionTokenInfo) {
                 throw new ApiError('Wrong action token', 404);

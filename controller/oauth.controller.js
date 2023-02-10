@@ -1,6 +1,7 @@
-const {oauthService, userService} = require('../service');
+const {oauthService, userService, emailService} = require('../service');
 const {ApiError} = require('../error');
 const {tokenAction} = require('../config');
+const {emailAction, config} = require('../config');
 
 module.exports = {
     login: async (req, res, next) => {
@@ -68,9 +69,11 @@ module.exports = {
 
             const actionToken = oauthService.generateActionToken(tokenAction.FORGOT_PASSWORD, {email: userInfo.email});
 
+            const forgotPassUrl = `${config.FRONTEND_URL}/password/new?token=${actionToken}`;
+
             await oauthService.addActionTokenToBase({_user_id: userInfo._id, tokenType: tokenAction.FORGOT_PASSWORD, actionToken});
 
-            //send email
+            await emailService.sendEmail(userInfo.email, emailAction.FORGOT_PASSWORD, {url: forgotPassUrl, userName: userInfo.name});
 
             res.sendStatus(200);
         } catch (e) {

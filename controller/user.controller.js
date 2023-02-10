@@ -1,4 +1,5 @@
-const {userService, oauthService} = require('../service');
+const {userService, oauthService, emailService} = require('../service');
+const {emailAction} = require('../config');
 const {ApiError} = require("../error");
 
 module.exports = {
@@ -11,6 +12,8 @@ module.exports = {
             userInfo = {...userInfo, password: hashedPassword};
 
             const user = await userService.createUser(userInfo);
+
+            await emailService.sendEmail(userInfo.email, emailAction.WELCOME, {userName: userInfo.name});
 
             res.status(201).json(user);
         } catch (e) {
