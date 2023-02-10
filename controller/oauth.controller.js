@@ -27,17 +27,38 @@ module.exports = {
     refresh: async (req, res ,next) => {
         try {
             const tokenInfo = req.tokenInfo;
-            console.log(tokenInfo._id);
 
             const tokenPair = oauthService.generateAccessTokens({id: tokenInfo._user_id});
 
-            await oauthService.deleteAccessTokens(tokenInfo._id);
+            await oauthService.deleteAccessTokensById(tokenInfo._id);
 
             await oauthService.addTokensToBase({_user_id: tokenInfo._user_id, ...tokenPair});
 
             res.status(201).json(tokenPair);
         } catch (e) {
             next(e);
+        }
+    },
+    logout: async (req, res) => {
+        try {
+            const tokenInfo = req.tokenInfo;
+
+            await oauthService.deleteAccessTokensById(tokenInfo._id);
+
+            res.sendStatus(204);
+        } catch (e) {
+            console.log(e);
+        }
+    },
+    logoutAll: async (req, res) => {
+        try {
+            const tokenInfo = req.tokenInfo;
+
+            await oauthService.deleteManyAccessTokens({_id: tokenInfo._id});
+
+            res.sendStatus(204);
+        } catch (e) {
+            console.log(e);
         }
     },
 };

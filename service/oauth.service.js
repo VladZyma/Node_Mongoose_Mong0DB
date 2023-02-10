@@ -53,7 +53,11 @@ module.exports = {
         const token = await OAuth.findOne(tokenInfo);
         return token;
     },
-    deleteAccessTokens: async (tokenId) => {
+    deleteAccessTokensById: async (tokenId) => {
         await OAuth.findByIdAndDelete(tokenId);
     },
+    deleteManyAccessTokens: async (filter) => {
+        await OAuth.deleteMany(filter);
+    },
+
 };
