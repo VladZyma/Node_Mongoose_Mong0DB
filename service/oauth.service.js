@@ -1,9 +1,9 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const {OAuth} = require('../dataBase');
+const {OAuth, ActionToken} = require('../dataBase');
 const {ApiError} = require('../error');
-const {config} = require('../config');
+const {config, tokenAction} = require('../config');
 
 module.exports = {
     hashPassword: async (password) => {
@@ -53,7 +53,57 @@ module.exports = {
         const token = await OAuth.findOne(tokenInfo);
         return token;
     },
-    deleteAccessTokens: async (tokenId) => {
+    deleteAccessTokensById: async (tokenId) => {
         await OAuth.findByIdAndDelete(tokenId);
     },
+    deleteManyAccessTokens: async (filter) => {
+        await OAuth.deleteMany(filter);
+    },
+
+    generateActionToken: (actionType, dataToSign) => {
+        let secret = '';
+
+        switch (actionType) {
+            case tokenAction.CONFIRM_ACCOUNT:
+                secret = config.CONFIRM_ACCOUNT_TOKEN_SECRET;
+                break;
+            case tokenAction.FORGOT_PASSWORD:
+                secret = config.FORGOT_PASSWORD_TOKEN_SECRET;
+                break;
+        }
+
+        const actionToken = jwt.sign(dataToSign, secret, {expiresIn: '60s'});
+
+        return actionToken;
+    },
+    checkActionToken: (token, actionType) => {
+        try {
+            let secret = '';
+
+            switch (actionType) {
+                case tokenAction.CONFIRM_ACCOUNT:
+                    secret = config.CONFIRM_ACCOUNT_TOKEN_SECRET;
+                    break;
+                case tokenAction.FORGOT_PASSWORD:
+                    secret = config.FORGOT_PASSWORD_TOKEN_SECRET;
+                    break;
+            }
+
+            return jwt.verify(token, secret);
+        } catch (e) {
+            throw new ApiError('Wrong action token', 401);
+        }
+},
+    addActionTokenToBase: async (token) => {
+        const tokenInfo = await ActionToken.create(token);
+        return tokenInfo;
+    },
+    findActionToken: async (tokenInfo) => {
+        const token = await ActionToken.findOne(tokenInfo);
+        return token;
+    },
+    deleteActionTokenById: async (tokenId) => {
+        await ActionToken.findByIdAndDelete(tokenId);
+    },
+
 };
