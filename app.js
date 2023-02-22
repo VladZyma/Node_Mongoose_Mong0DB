@@ -17,7 +17,7 @@ app.use('/cars', carRouter);
 app.use('/auth', oauthRouter);
 
 app.use((error, req, res, next) => {
-    res.status(error.status || 5000).json({
+    res.status(error.status || 500).json({
         message: error.message,
         status: error.status,
     });

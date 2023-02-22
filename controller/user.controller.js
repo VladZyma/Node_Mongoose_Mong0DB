@@ -1,4 +1,5 @@
 const {userService, oauthService, emailService} = require('../service');
+const {userPresenter} = require('../presenter');
 const {emailAction} = require('../config');
 const {ApiError} = require("../error");
 
@@ -22,13 +23,15 @@ module.exports = {
     },
     getAllUsers: async (req, res, next) => {
         try {
-            const users = await userService.findAllUsers();
+            const data = await userService.findAllUsers(req.query);
 
-            if (users.length < 1) {
+            if (data.users.length < 1) {
                 throw new ApiError('Users not found', 404);
             }
 
-            res.status(200).json(users);
+            data.users = userPresenter.normalizeAll(data.users);
+
+            res.status(200).json(data);
         } catch (e) {
             next(e);
         }
